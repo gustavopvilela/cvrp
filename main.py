@@ -3,6 +3,8 @@ import os
 import utils
 import time
 from mole_jameson import mole_jameson
+from gillet_miller import GilletMiller
+
 
 def main ():
     if len(sys.argv) != 5:
@@ -36,6 +38,11 @@ def main ():
     elif heuristica == "CW":
         tempo_inicio = time.time()
         # TODO: colocar aqui heurística de Clark e Wright
+        tempo_fim = time.time()
+    elif heuristica == "GM":
+        tempo_inicio = time.time()
+        solver = GilletMiller(dados_instancia)
+        rotas, custo_total = solver.gillet_miller()
         tempo_fim = time.time()
     else:
         print(f"Erro: esta heurística não é implementada neste programa")
