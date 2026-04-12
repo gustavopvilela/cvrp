@@ -18,7 +18,7 @@ class Rota:
             for k in range(len(self.caminho) - 1)
         ]
 
-def mole_jameson(instancia):
+def mole_jameson(instancia, lambda_param=1.0):
     demandas = instancia['demands']
     deposito = instancia['depot']
     capacidade = instancia['capacity']
@@ -30,12 +30,11 @@ def mole_jameson(instancia):
     rotas = []
     custo_total = 0.0
 
-    while clientes_sem_rota:
+    while clientes_sem_rota and len(rotas) < instancia['trucks']:
         # Abre um novo caminhão a partir do depósito
         rota_atual = Rota(deposito)
 
-        # Primeiro cliente da rota: feito o sugerido, ou seja,
-        # o nó mais longe
+        # Primeiro cliente da rota: pode haver vários critérios, o escolhido foi o cliente mais longe
         no_mais_longe = max(clientes_sem_rota, key=lambda no: matriz_distancias[deposito][no])
 
         custo_inicial = matriz_distancias[deposito][no_mais_longe] * 2
@@ -49,7 +48,6 @@ def mole_jameson(instancia):
             melhor_indice_aresta = None
             melhor_custo_e = None
             melhor_sigma = -float('inf')
-            lambda_param = 1
 
             # MV (Melhor Vértice) para inserir atualmente
             for no in clientes_sem_rota:

@@ -1,4 +1,5 @@
 import math
+import os
 import matplotlib.pyplot as plt
 
 def distancia_euclidiana (coord1, coord2):
@@ -74,7 +75,28 @@ def ler_instancia (instancia):
                 else:
                     matriz_distancias[i][j] = distancia_euclidiana(nos[i], nos[j])
 
+        # Adicionando os caminhões manualmente pois não há forma padronizada de consegui-los no arquivo
+        trucks = {
+            'instances/A-n80-k10.vrp': 10,
+            'instances/CMT10.vrp': 18,
+            'instances/E-n101-k14.vrp': 14,
+            'instances/F-n72-k4.vrp': 7,
+            'instances/F-n135-k7.vrp': 4,
+            'instances/Golden_3.vrp': 27,
+            'instances/Golden_18.vrp': 9,
+            'instances/Li_21.vrp': 10,
+            'instances/Loggi-n601-k42.vrp': 42,
+            'instances/M-n151-k12.vrp': 12,
+            'instances/tai150b.vrp': 14,
+            'instances/tai385.vrp': 46,
+            'instances/X-n502-k39.vrp': 39,
+            'instances/XL-n1701-k562.vrp': 562,
+            'instances/XL-n2541-k121.vrp': 121
+        }
+
         dados_instancia['distance_matrix'] = matriz_distancias
+        dados_instancia['trucks'] = trucks[instancia]
+
         return dados_instancia
 
 def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
@@ -113,6 +135,8 @@ def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
     plt.legend()
     plt.grid(True, linestyle=':', alpha=0.5)
 
+    pasta = arquivo_saida.split("/")[0]
+    if not os.path.exists(pasta): os.makedirs(pasta)
     plt.savefig(arquivo_saida)
     plt.close()
     print(f"Gráfico da instância {dados_instancia['name']} salvo em {arquivo_saida}")
