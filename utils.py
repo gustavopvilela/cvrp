@@ -64,15 +64,15 @@ def ler_instancia (instancia):
                 valor = int(linha.strip())
                 if valor != -1: dados_instancia['depot'] = valor
 
-            # Calculando matriz de distâncias dos nós
-            matriz_distancias = {}
-            nos = dados_instancia['nodes']
-            for i in nos:
-                matriz_distancias[i] = {}
-                for j in nos:
-                    if i == j: matriz_distancias[i][j] = 0.0
-                    else:
-                        matriz_distancias[i][j] = distancia_euclidiana(nos[i], nos[j])
+        # Calculando matriz de distâncias dos nós
+        matriz_distancias = {}
+        nos = dados_instancia['nodes']
+        for i in nos:
+            matriz_distancias[i] = {}
+            for j in nos:
+                if i == j: matriz_distancias[i][j] = 0.0
+                else:
+                    matriz_distancias[i][j] = distancia_euclidiana(nos[i], nos[j])
 
         dados_instancia['distance_matrix'] = matriz_distancias
         return dados_instancia
