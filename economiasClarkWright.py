@@ -82,4 +82,13 @@ def clarke_wright(instancia):
             #guardamos a rota apenas com os clientes
             rotas_finais.append(rota)
 
+    #caso aqtd de caminhões ultrapasse o limite
+    veiculos_usados = len(rotas_finais)
+    veiculos_disponiveis = instancia.get('trucks', veiculos_usados)
+
+    if type(veiculos_disponiveis) == int and veiculos_usados > veiculos_disponiveis:
+        rotas_extras = veiculos_usados - veiculos_disponiveis
+        penalidade = rotas_extras * (custo_total / veiculos_usados) * 1.5
+        custo_total += penalidade
+
     return rotas_finais, custo_total
