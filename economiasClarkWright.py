@@ -82,6 +82,7 @@ def clarke_wright(instancia):
             #guardamos a rota apenas com os clientes
             rotas_finais.append(rota)
 
+    #caso aqtd de caminhões ultrapasse o limite
     veiculos_usados = len(rotas_finais)
     veiculos_disponiveis = instancia.get('trucks', veiculos_usados)
 
