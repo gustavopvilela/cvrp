@@ -35,7 +35,7 @@ def ler_instancia (instancia):
                 secao_atual = "DEPOT"
                 continue
 
-            # Leitura do cabeçalho do arquivo
+            #leitura do cabeçalho do arquivo
             if secao_atual is None:
                 if ":" in linha:
                     chave, valor = linha.split(":", 1)
@@ -80,8 +80,8 @@ def ler_instancia (instancia):
             'instances/A-n80-k10.vrp': 10,
             'instances/CMT10.vrp': 18,
             'instances/E-n101-k14.vrp': 14,
-            'instances/F-n72-k4.vrp': 7,
-            'instances/F-n135-k7.vrp': 4,
+            'instances/F-n72-k4.vrp': 4,
+            'instances/F-n135-k7.vrp': 7,
             'instances/Golden_3.vrp': 27,
             'instances/Golden_18.vrp': 9,
             'instances/Li_21.vrp': 10,
