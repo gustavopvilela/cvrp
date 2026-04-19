@@ -21,6 +21,7 @@ def clarke_wright(instancia):
 
     #inicializa rotas (cada cliente em sua própria rota isolada)
     rotas = [[c] for c in clientes]
+    #atribui cada rota ao seu indice, ex.: {2: 0, 3: 1, 4: 2, 5: 3}
     cliente_rota = {c: i for i, c in enumerate(clientes)}
     carga_rota = [demandas[c] for c in clientes]
 
@@ -86,9 +87,16 @@ def clarke_wright(instancia):
     veiculos_usados = len(rotas_finais)
     veiculos_disponiveis = instancia.get('trucks', veiculos_usados)
 
-    if type(veiculos_disponiveis) == int and veiculos_usados > veiculos_disponiveis:
-        rotas_extras = veiculos_usados - veiculos_disponiveis
-        penalidade = rotas_extras * (custo_total / veiculos_usados) * 1.5
+    if isinstance(veiculos_disponiveis, int) and veiculos_disponiveis > 0:
+        custo_medio_rota = custo_total / veiculos_usados
+        alfa = custo_medio_rota * 0.3  #punição por caminhão que sobrou
+        beta = custo_medio_rota * 1.5  #punição por caminhão extra
+
+        veiculos_sobraram = max(0, veiculos_disponiveis - veiculos_usados)
+        veiculos_faltaram = max(0, veiculos_usados - veiculos_disponiveis)
+
+        penalidade = (alfa * veiculos_sobraram) + (beta * veiculos_faltaram)
+
         custo_total += penalidade
 
     return rotas_finais, custo_total
