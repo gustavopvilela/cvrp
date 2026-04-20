@@ -20,6 +20,8 @@ def gerar_boxplot_gaps (gaps_mj, gaps_cw, gaps_gm):
     ax.set_xlabel('Heurísticas')
     ax.yaxis.grid(True)
 
+    plt.savefig('grafico_boxplot_gaps.pdf', format='pdf', dpi=300)
+    plt.savefig('grafico_boxplot_gaps.png', format='png', dpi=300)
     plt.show()
 
 def gerar_grafico_barras_runtime (runtime_mj, runtime_cw, runtime_gm):
@@ -61,6 +63,8 @@ def gerar_grafico_barras_runtime (runtime_mj, runtime_cw, runtime_gm):
     ax.set_axisbelow(True)
     ax.grid(axis='y', linestyle='-', alpha=0.7)
 
+    plt.savefig('grafico_barras_runtime.pdf', format='pdf', dpi=300)
+    plt.savefig('grafico_barras_runtime.png', format='png', dpi=300)
     plt.show()
 
 def gerar_intervalo_confianca (gaps_mj, gaps_cw, gaps_gm):
@@ -117,6 +121,8 @@ def gerar_intervalo_confianca (gaps_mj, gaps_cw, gaps_gm):
     ax.spines['right'].set_visible(False)
 
     plt.tight_layout()
+    plt.savefig('grafico_intervalo_confianca.pdf', format='pdf', dpi=300)
+    plt.savefig('grafico_intervalo_confianca.png', format='png', dpi=300)
     plt.show()
 
 if __name__ == '__main__':
@@ -154,7 +160,23 @@ if __name__ == '__main__':
         19.77714646,
         7.231504884
     ]
-    gaps_gillet_miller = np.random.normal(0, 1, 200) # TODO: colocar os dados reais
+    gaps_gillet_miller = [
+        27.54566081,
+        16.52756385,
+        32.51452671,
+        62.42194093,
+        49.39500861,
+        7.503409773,
+        12.80938169,
+        13.02857058,
+        88.04962166,
+        27.70541872,
+        46.21914684,
+        51.75407456,
+        6.384277584,
+        41.17839297,
+        25.71127809
+    ]
 
     runtime_mole_jameson = [
         0,
@@ -190,7 +212,23 @@ if __name__ == '__main__':
         1.60,
         4.11
     ]
-    runtime_gillet_miller = np.random.normal(2, 1, 15) # TODO: colocar os dados reais
+    runtime_gillet_miller = [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.01,
+        0.0,
+        0.02,
+        0.01,
+        0.0,
+        0.0,
+        0.0,
+        0.01,
+        0.04,
+        0.06
+    ]
 
     gerar_boxplot_gaps(gaps_mole_jameson, gaps_clark_wright, gaps_gillet_miller)
     gerar_grafico_barras_runtime(runtime_mole_jameson, runtime_clark_wright, runtime_gillet_miller)

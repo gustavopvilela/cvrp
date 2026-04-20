@@ -62,24 +62,17 @@ def gerar_grafico_diferenca_critica (gaps_mj, gaps_cw, gaps_gm):
         ax.plot(media, 1, 'o', markersize=15, color=cores[i], zorder=5)
         ax.text(media, 1.15, nomes[i], ha='center', va='bottom', fontsize=14, fontweight='bold', color=cores[i])
 
-    # TODO: colocar os dados reais
-    # Linha 1: CW e MJ empataram (p = 0.22)
-    # ax.hlines(1.4, rank_medio_clark_wright, rank_medio_mole_jameson, color='black', linewidth=4, zorder=3)
-    # ax.vlines([rank_medio_clark_wright, rank_medio_mole_jameson], 1.35, 1.45, color='black', linewidth=2)
-    # ax.text((rank_medio_clark_wright + rank_medio_mole_jameson) / 2, 1.45, 'Empate (p=0.22)', ha='center', va='bottom', fontsize=10)
-
-    # Linha 2: MJ e GM empataram (p = 0.51)
-    # ax.hlines(1.6, rank_medio_mole_jameson, rank_medio_gillet_miller, color='black', linewidth=4, zorder=3)
-    # ax.vlines([rank_medio_mole_jameson, rank_medio_gillet_miller], 1.55, 1.65, color='black', linewidth=2)
-    # ax.text((rank_medio_mole_jameson + rank_medio_gillet_miller) / 2, 1.65, 'Empate (p=0.51)', ha='center', va='bottom', fontsize=10)
+    ax.hlines(1.4, rank_medio_mole_jameson, rank_medio_gillet_miller, color='black', linewidth=4, zorder=3)
+    ax.vlines([rank_medio_mole_jameson, rank_medio_gillet_miller], 1.35, 1.45, color='black', linewidth=2)
+    ax.text((rank_medio_mole_jameson + rank_medio_gillet_miller) / 2, 1.45, 'Empate (p=0.63)', ha='center', va='bottom',
+            fontsize=10, fontweight='bold')
 
     ax.set_title('Gráfico de Diferença Crítica (Teste de Nemenyi)', fontsize=16, fontweight='bold', pad=20)
     ax.axis('off')  # Esconde as bordas do gráfico padrão
     ax.set_ylim(0.5, 2.0)  # Ajusta o enquadramento
 
     plt.tight_layout()
-    plt.savefig('cd_diagram.png', dpi=300, bbox_inches='tight')
-    print("Gráfico salvo como 'cd_diagram.png'!")
+    plt.savefig('grafico_diferenca_critica.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 if __name__ == '__main__':
@@ -117,7 +110,23 @@ if __name__ == '__main__':
         19.77714646,
         7.231504884
     ]
-    gaps_gillet_miller = [42.19, 87.59, 15.03, 3.99, 64.28, 91.50, 28.19, 55.40, 73.19, 9.88, 34.50, 81.11, 49.99, 67.20, 12.49]
+    gaps_gillet_miller = [
+        27.54566081,
+        16.52756385,
+        32.51452671,
+        62.42194093,
+        49.39500861,
+        7.503409773,
+        12.80938169,
+        13.02857058,
+        88.04962166,
+        27.70541872,
+        46.21914684,
+        51.75407456,
+        6.384277584,
+        41.17839297,
+        25.71127809
+    ]
 
     comparar_heuristicas(gaps_mole_jameson, gaps_clark_wright, gaps_gillet_miller)
     gerar_grafico_diferenca_critica(gaps_mole_jameson, gaps_clark_wright, gaps_gillet_miller)
