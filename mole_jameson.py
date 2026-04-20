@@ -86,9 +86,18 @@ def mole_jameson(instancia, lambda_param=1.0):
     veiculos_usados = len(rotas)
     veiculos_disponiveis = instancia.get('trucks', veiculos_usados)
 
-    if type(veiculos_disponiveis) == int and veiculos_usados > veiculos_disponiveis:
-        rotas_extras = veiculos_usados - veiculos_disponiveis
-        penalidade = rotas_extras * (custo_total / veiculos_usados) * 1.5;
+    print(f"USADOS: {veiculos_usados} | DISPONÍVEIS: {veiculos_disponiveis}")
+
+    if isinstance(veiculos_disponiveis, int) and veiculos_disponiveis > 0:
+        custo_medio_rota = custo_total / veiculos_usados
+        alfa = custo_medio_rota * 0.3 # Punição por caminhão que sobrou
+        beta = custo_medio_rota * 1.5 # Punição por caminhão extra
+
+        veiculos_sobraram = max(0, veiculos_disponiveis - veiculos_usados)
+        veiculos_faltaram = max(0, veiculos_usados - veiculos_disponiveis)
+
+        penalidade = (alfa * veiculos_sobraram) + (beta * veiculos_faltaram)
+
         custo_total += penalidade
 
     return rotas, custo_total

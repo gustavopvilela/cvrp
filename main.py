@@ -9,7 +9,7 @@ def main ():
     if len(sys.argv) != 5:
         print("Insira os argumentos corretamente.")
         print("python main.py <instância> <arquivo de saída> <ótimo conhecido> <heurística>")
-        print("Exemplo: python main.py A-n80-k10 resultados.dat 1763 MJ")
+        print("Exemplo: python main.py A-n80-k10 resultados_mj.dat 1763 MJ")
         sys.exit(1)
 
     instancia_arg = sys.argv[1]
