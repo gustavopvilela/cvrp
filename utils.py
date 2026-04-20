@@ -35,7 +35,7 @@ def ler_instancia (instancia):
                 secao_atual = "DEPOT"
                 continue
 
-            # Leitura do cabeçalho do arquivo
+            #leitura do cabeçalho do arquivo
             if secao_atual is None:
                 if ":" in linha:
                     chave, valor = linha.split(":", 1)
