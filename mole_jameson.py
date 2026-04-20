@@ -30,7 +30,7 @@ def mole_jameson(instancia, lambda_param=1.0):
     rotas = []
     custo_total = 0.0
 
-    while clientes_sem_rota and len(rotas) < instancia['trucks']:
+    while clientes_sem_rota:
         # Abre um novo caminhão a partir do depósito
         rota_atual = Rota(deposito)
 
@@ -80,5 +80,24 @@ def mole_jameson(instancia, lambda_param=1.0):
 
         rotas.append(rota_atual.caminho)
         custo_total += rota_atual.custo_atual
+
+    # Como a heurística não prevê limite de frota, penalizamos o custo
+    # caso a quantidade de caminhões usados ultrapasse o limite
+    veiculos_usados = len(rotas)
+    veiculos_disponiveis = instancia.get('trucks', veiculos_usados)
+
+    print(f"USADOS: {veiculos_usados} | DISPONÍVEIS: {veiculos_disponiveis}")
+
+    if isinstance(veiculos_disponiveis, int) and veiculos_disponiveis > 0:
+        custo_medio_rota = custo_total / veiculos_usados
+        alfa = custo_medio_rota * 0.3 # Punição por caminhão que sobrou
+        beta = custo_medio_rota * 1.5 # Punição por caminhão extra
+
+        veiculos_sobraram = max(0, veiculos_disponiveis - veiculos_usados)
+        veiculos_faltaram = max(0, veiculos_usados - veiculos_disponiveis)
+
+        penalidade = (alfa * veiculos_sobraram) + (beta * veiculos_faltaram)
+
+        custo_total += penalidade
 
     return rotas, custo_total
