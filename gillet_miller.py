@@ -115,9 +115,16 @@ class GilletMiller:
         veiculos_usados = len(self.rotas)
         veiculos_disponiveis = self.dados.get('trucks', veiculos_usados)
 
-        if type(veiculos_disponiveis) == int and veiculos_usados > veiculos_disponiveis:
-            rotas_extras = veiculos_usados - veiculos_disponiveis
-            penalidade = rotas_extras * (self.custo_total / veiculos_usados) * 1.5;
+        if isinstance(veiculos_disponiveis, int) and veiculos_disponiveis > 0:
+            custo_medio_rota = self.custo_total / veiculos_usados
+            alfa = custo_medio_rota * 0.3  # Punição por caminhão que sobrou
+            beta = custo_medio_rota * 1.5  # Punição por caminhão extra
+
+            veiculos_sobraram = max(0, veiculos_disponiveis - veiculos_usados)
+            veiculos_faltaram = max(0, veiculos_usados - veiculos_disponiveis)
+
+            penalidade = (alfa * veiculos_sobraram) + (beta * veiculos_faltaram)
+
             self.custo_total += penalidade
 
         return self.rotas, self.custo_total
