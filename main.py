@@ -3,6 +3,7 @@ import os
 import utils
 import time
 from mole_jameson import mole_jameson
+from economiasClarkWright import clarke_wright
 from gillet_miller import GilletMiller
 
 
@@ -37,7 +38,7 @@ def main ():
         tempo_fim = time.time()
     elif heuristica == "CW":
         tempo_inicio = time.time()
-        # TODO: colocar aqui heurística de Clark e Wright
+        rotas, custo_total = clarke_wright(dados_instancia)
         tempo_fim = time.time()
     elif heuristica == "GM":
         tempo_inicio = time.time()
