@@ -62,10 +62,19 @@ def gerar_grafico_diferenca_critica (gaps_mj, gaps_cw, gaps_gm):
         ax.plot(media, 1, 'o', markersize=15, color=cores[i], zorder=5)
         ax.text(media, 1.15, nomes[i], ha='center', va='bottom', fontsize=14, fontweight='bold', color=cores[i])
 
-    ax.hlines(1.4, rank_medio_mole_jameson, rank_medio_gillet_miller, color='black', linewidth=4, zorder=3)
-    ax.vlines([rank_medio_mole_jameson, rank_medio_gillet_miller], 1.35, 1.45, color='black', linewidth=2)
-    ax.text((rank_medio_mole_jameson + rank_medio_gillet_miller) / 2, 1.45, 'Empate (p=0.63)', ha='center', va='bottom',
-            fontsize=10, fontweight='bold')
+    y_pos_mj_gm = 1.6
+    ax.hlines(y_pos_mj_gm, rank_medio_mole_jameson, rank_medio_gillet_miller, color='black', linewidth=4, zorder=3)
+    ax.vlines([rank_medio_mole_jameson, rank_medio_gillet_miller], y_pos_mj_gm - 0.05, y_pos_mj_gm + 0.05,
+              color='black', linewidth=2)
+    ax.text((rank_medio_mole_jameson + rank_medio_gillet_miller) / 2, y_pos_mj_gm + 0.05, 'Empate (p=0.408)',
+            ha='center', va='bottom', fontsize=10, fontweight='bold')
+
+    y_pos_mj_cw = 1.4
+    ax.hlines(y_pos_mj_cw, rank_medio_mole_jameson, rank_medio_clark_wright, color='gray', linewidth=4, zorder=3)
+    ax.vlines([rank_medio_mole_jameson, rank_medio_clark_wright], y_pos_mj_cw - 0.05, y_pos_mj_cw + 0.05, color='gray',
+              linewidth=2)
+    ax.text((rank_medio_mole_jameson + rank_medio_clark_wright) / 2, y_pos_mj_cw + 0.05, 'Empate (p=0.161)',
+            ha='center', va='bottom', fontsize=10, fontweight='bold')
 
     ax.set_title('Gráfico de Diferença Crítica (Teste de Nemenyi)', fontsize=16, fontweight='bold', pad=20)
     ax.axis('off')  # Esconde as bordas do gráfico padrão
@@ -85,7 +94,7 @@ if __name__ == '__main__':
         18.12817109,
         10.9332449,
         32.40945597,
-        89.7265838,
+        2.734162042,
         25.37339901,
         17.31480768,
         15.39972446,
@@ -119,7 +128,7 @@ if __name__ == '__main__':
         7.503409773,
         12.80938169,
         13.02857058,
-        88.04962166,
+        19.50378336,
         27.70541872,
         46.21914684,
         51.75407456,
