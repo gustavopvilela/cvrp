@@ -12,18 +12,19 @@ def ler_instancia (instancia):
         'name': '',
         'dimension': 0,
         'capacity': 0,
-        'nodes': {}, # Formato: {ID: (x, y)}
-        'demands': {}, # Formato: {ID: demanda}
-        'depot': 1
+        'nodes': {},
+        'demands': {},
+        'depot': 1,
+        'edge_weight_type': 'EUC_2D',
+        'edge_weight_format': '',
+        'explicit_weights': []
     }
 
     secao_atual = None
-
     with open(instancia, 'r') as arquivo:
         for linha in arquivo:
             linha = linha.strip()
-            if not linha or linha == "EOF":
-                continue
+            if not linha or linha == "EOF": continue
 
             if linha.startswith("NODE_COORD_SECTION"):
                 secao_atual = "COORD"
@@ -34,8 +35,11 @@ def ler_instancia (instancia):
             elif linha.startswith("DEPOT_SECTION"):
                 secao_atual = "DEPOT"
                 continue
+            elif linha.startswith("EDGE_WEIGHT_SECTION"):
+                secao_atual = "EDGE_WEIGHT"
+                continue
 
-            #leitura do cabeçalho do arquivo
+            # Cabeçalho
             if secao_atual is None:
                 if ":" in linha:
                     chave, valor = linha.split(":", 1)
@@ -45,59 +49,80 @@ def ler_instancia (instancia):
                     if chave == "NAME": dados_instancia['name'] = valor
                     elif chave == "DIMENSION": dados_instancia['dimension'] = int(valor)
                     elif chave == "CAPACITY": dados_instancia['capacity'] = int(valor)
-
-            # Leitura das coordenadas
+                    elif chave == "EDGE_WEIGHT_TYPE": dados_instancia['edge_weight_type'] = valor
+                    elif chave == "EDGE_WEIGHT_FORMAT": dados_instancia['edge_weight_format'] = valor
+            # Coordenadas (EUC_2D)
             elif secao_atual == "COORD":
                 partes = linha.split()
                 no_id = int(partes[0])
                 x, y = float(partes[1]), float(partes[2])
                 dados_instancia['nodes'][no_id] = (x, y)
-
-            # Leitura das demandas
+            # Demandas
             elif secao_atual == "DEMAND":
                 partes = linha.split()
                 no_id = int(partes[0])
                 demanda = int(partes[1])
                 dados_instancia['demands'][no_id] = demanda
-
-            # Leitura do depósito
+            # Depósito
             elif secao_atual == "DEPOT":
                 valor = int(linha.strip())
                 if valor != -1: dados_instancia['depot'] = valor
+            # Distâncias explícitas
+            elif secao_atual == "EDGE_WEIGHT":
+                dados_instancia['explicit_weights'].extend([float(v) for v in linha.split()])
 
-        # Calculando matriz de distâncias dos nós
-        matriz_distancias = {}
+    # Calculando a matriz de distâncias
+    matriz_distancias = {}
+    dimension = dados_instancia['dimension']
+
+    if dados_instancia['edge_weight_type'] == 'EUC_2D' or (dados_instancia['nodes'] and not dados_instancia['explicit_weights']):
         nos = dados_instancia['nodes']
         for i in nos:
             matriz_distancias[i] = {}
             for j in nos:
                 if i == j: matriz_distancias[i][j] = 0.0
-                else:
-                    matriz_distancias[i][j] = distancia_euclidiana(nos[i], nos[j])
+                else: matriz_distancias[i][j] = distancia_euclidiana(nos[i], nos[j])
+    elif dados_instancia['edge_weight_type'] == 'EXPLICIT':
+        for i in range(1, dimension + 1):
+            matriz_distancias[i] = {}
+            for j in range(1, dimension + 1):
+                matriz_distancias[i][j] = 0.0
 
-        # Adicionando os caminhões manualmente pois não há forma padronizada de consegui-los no arquivo
-        trucks = {
-            'instances/A-n80-k10.vrp': 10,
-            'instances/CMT10.vrp': 18,
-            'instances/E-n101-k14.vrp': 14,
-            'instances/F-n72-k4.vrp': 4,
-            'instances/F-n135-k7.vrp': 7,
-            'instances/Golden_3.vrp': 9,
-            'instances/Golden_18.vrp': 27,
-            'instances/Li_21.vrp': 10,
-            'instances/Loggi-n601-k42.vrp': 42,
-            'instances/M-n151-k12.vrp': 12,
-            'instances/tai150b.vrp': 14,
-            'instances/tai385.vrp': 46,
-            'instances/X-n502-k39.vrp': 39,
-            'instances/XL-n1701-k562.vrp': 562,
-            'instances/XL-n2541-k121.vrp': 121
-        }
+        if dados_instancia['edge_weight_format'] == 'LOWER_ROW':
+            pesos = dados_instancia['explicit_weights']
+            idx_peso = 0
 
-        dados_instancia['distance_matrix'] = matriz_distancias
-        dados_instancia['trucks'] = trucks[instancia]
+            for i in range(2, dimension + 1):
+                for j in range(1, i):
+                    if idx_peso < len(pesos):
+                        dist = pesos[idx_peso]
+                        matriz_distancias[i][j] = dist
+                        matriz_distancias[j][i] = dist
+                        idx_peso += 1
 
-        return dados_instancia
+    del dados_instancia['explicit_weights']
+
+    # Adicionando os caminhões manualmente
+    trucks = {
+        'instances/A-n80-k10.vrp': 10,
+        'instances/CMT10.vrp': 18,
+        'instances/E-n101-k14.vrp': 14,
+        'instances/F-n72-k4.vrp': 4,
+        'instances/F-n135-k7.vrp': 7,
+        'instances/Golden_3.vrp': 9,
+        'instances/Golden_18.vrp': 27,
+        'instances/Li_21.vrp': 10,
+        'instances/Loggi-n601-k42.vrp': 42,
+        'instances/M-n151-k12.vrp': 12,
+        'instances/tai150b.vrp': 14,
+        'instances/tai385.vrp': 46,
+        'instances/X-n502-k39.vrp': 39,
+        'instances/XL-n1701-k562.vrp': 562,
+        'instances/XL-n2541-k121.vrp': 121
+    }
+    dados_instancia['distance_matrix'] = matriz_distancias
+    dados_instancia['trucks'] = trucks[instancia]
+    return dados_instancia
 
 def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
     nos = dados_instancia['nodes']
