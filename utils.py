@@ -165,3 +165,36 @@ def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
     plt.savefig(arquivo_saida)
     plt.close()
     print(f"Gráfico da instância {dados_instancia['name']} salvo em {arquivo_saida}")
+
+# Transforma a lista de listas em um único vetor com todas as rotas
+def encode (rotas, demandas):
+    giant_tour = []
+    cargas_rotas = []
+
+    for rota in rotas:
+        giant_tour.extend(rota[:-1])
+        carga = sum(demandas[no] for no in rota)
+        cargas_rotas.append(carga)
+
+    if giant_tour: giant_tour.append(0)
+
+    estado = {
+        'tour': giant_tour,         # [0, 1, 2, 0, 3, 0]
+        'cargas': cargas_rotas      # [45, 30]
+    }
+
+    return estado
+
+# Transforma um único vetor em uma lista de listas para plotagem
+def decode (estado):
+    giant_tour = estado['tour']
+    rotas_lista = []
+    rota_atual = []
+
+    for no in giant_tour:
+        rota_atual.append(no)
+        if no == 0 and len(rota_atual) > 0:
+            rotas_lista.append(rota_atual)
+            rota_atual = [0]
+
+    return rotas_lista
