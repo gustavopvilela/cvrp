@@ -1,43 +1,38 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import seaborn as sns
 from scipy import stats
 import scikit_posthocs as sp
 
-def comparar_heuristicas (gaps_mj, gaps_cw, gaps_gm):
+def comparar_heuristicas(gaps_mj, gaps_cw, gaps_gm):
     dados = np.array([gaps_mj, gaps_cw, gaps_gm]).T
+    nomes = ['MJ', 'CW', 'GM']
 
-    # Teste de Friedman
-    print("=== TESTE DE FRIEDMAN ===")
+    sns.set_theme(style="white", font_scale=1.1)
     stat, p_value = stats.friedmanchisquare(*dados.T)
 
-    print(f"Estatística de teste: {stat:.6f}")
-    print(f"P-value: {p_value:.10f}")
+    fig, ax = plt.subplots(figsize=(8, 6))
+    titulo_friedman = f"Teste de Friedman\nEstatística: {stat:.3f} | p-value: {p_value:.4e}"
 
     if p_value < 0.05:
-        print("=== TESTE DE NEMENYI ===")
+        # Teste de Nemenyi
         resultado_nemenyi = sp.posthoc_nemenyi_friedman(dados)
+        resultado_nemenyi.columns = nomes
+        resultado_nemenyi.index = nomes
+        mask = np.triu(np.ones_like(resultado_nemenyi, dtype=bool))
+        sns.heatmap(resultado_nemenyi, annot=True, mask=mask, cmap="Blues",
+                    vmin=0, vmax=1, cbar_kws={'label': 'p-value'},
+                    linewidths=1, ax=ax, fmt=".3f", square=True)
 
-        resultado_nemenyi.columns = ['MJ', 'CW', 'GM']
-        resultado_nemenyi.index = ['MJ', 'CW', 'GM']
+        plt.title(f"Teste Post-Hoc de Nemenyi (Matriz de p-values)\n\n{titulo_friedman}",
+                  pad=15, fontweight='bold')
 
-        print("Matriz de p-values unificada:")
-        print(resultado_nemenyi)
+    plt.tight_layout()
+    nome_arquivo = 'resultado_testes_estatisticos.png'
+    plt.savefig(nome_arquivo, dpi=300, bbox_inches='tight')
+    plt.show()
 
-        print("\nConclusão de Nemenyi (alfa = 0.05):")
-        if resultado_nemenyi.loc['MJ', 'GM'] < 0.05:
-            print("- MJ é estatisticamente diferente de GM")
-        else:
-            print("- MJ e GM tiveram desempenho estatisticamente equivalente")
-
-        if resultado_nemenyi.loc['CW', 'GM'] < 0.05:
-            print("- CW é estatisticamente diferente de GM")
-        else:
-            print("- CW e GM tiveram desempenho estatisticamente equivalente")
-
-        if resultado_nemenyi.loc['MJ', 'CW'] < 0.05:
-            print("- MJ é estatisticamente diferente de CW")
-        else:
-            print("- MJ e CW tiveram desempenho estatisticamente equivalente")
+    print(f"-> Imagem dos testes estatísticos salva como: {nome_arquivo}")
 
 def gerar_grafico_diferenca_critica (gaps_mj, gaps_cw, gaps_gm):
     dados = np.array([gaps_mj, gaps_cw, gaps_gm]).T

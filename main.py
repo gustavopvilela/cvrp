@@ -3,6 +3,7 @@ import os
 import utils
 import time
 import graficos_resultados as gr
+import teste_hipotese as th
 from mole_jameson import mole_jameson
 from economiasClarkWright import clarke_wright
 from gillet_miller import GilletMiller
@@ -124,21 +125,11 @@ def main ():
 
             print("\nExecução em lote finalizada com sucesso. Gerando gráficos de resultados...")
 
-            gr.gerar_boxplot_gaps(
-                resultados["MJ"]["gaps"],
-                resultados["CW"]["gaps"],
-                resultados["GM"]["gaps"],
-            )
-            gr.gerar_grafico_barras_runtime(
-                resultados["MJ"]["runtimes"],
-                resultados["CW"]["runtimes"],
-                resultados["GM"]["runtimes"],
-            )
-            gr.gerar_intervalo_confianca(
-                resultados["MJ"]["gaps"],
-                resultados["CW"]["gaps"],
-                resultados["GM"]["gaps"],
-            )
+            gr.gerar_boxplot_gaps(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
+            gr.gerar_grafico_barras_runtime(resultados["MJ"]["runtimes"], resultados["CW"]["runtimes"], resultados["GM"]["runtimes"])
+            gr.gerar_intervalo_confianca(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
+            th.gerar_grafico_diferenca_critica(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
+            th.comparar_heuristicas(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
         else:
             print(f"Iniciando benchmarking em lote ({heuristica}) para {len(arquivos)} instâncias...")
             for arquivo in arquivos:
