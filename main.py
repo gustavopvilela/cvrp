@@ -4,9 +4,10 @@ import utils
 import time
 import graficos_resultados as gr
 import teste_hipotese as th
-from mole_jameson import mole_jameson
-from economiasClarkWright import clarke_wright
-from gillet_miller import GilletMiller
+from busca_local.busca_lexicografica import busca_lexicografica
+from heuristicas_construtivas.mole_jameson import mole_jameson
+from heuristicas_construtivas.economiasClarkWright import clarke_wright
+from heuristicas_construtivas.gillet_miller import GilletMiller
 
 OTIMOS_CONHECIDOS = {
     'A-n80-k10.vrp': 1763.0,
@@ -40,6 +41,19 @@ def executar_metodo (dados_instancia, metodo):
         solver = GilletMiller(dados_instancia)
         rotas, custo_total = solver.gillet_miller()
         tempo_fim = time.time()
+    elif metodo == "LS-MJ-BL-Shift":
+        rotas, custo_total = mole_jameson(dados_instancia, lambda_param=1.0)
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+        estado['custo_total'] = custo_total
+        tempo_inicio = time.time()
+
+        houve_melhoria = True
+        while houve_melhoria:
+            houve_melhoria, estado, delta = busca_lexicografica(estado, dados_instancia['distance_matrix'], dados_instancia['demands'], dados_instancia['capacity'])
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
     else:
         raise ValueError("Método desconhecido.")
 
@@ -90,7 +104,7 @@ def main ():
 
     # Execução em lote
     if instancia_arg == "ALL":
-        if heuristica not in ["MJ", "CW", "GM", "ALL"]:
+        if heuristica not in ["MJ", "CW", "GM", "ALL", "LS-MJ-BL-Shift"]:
             print(f"Erro: a heurística {heuristica} não é reconhecida. Use MJ, CW ou GM.")
             sys.exit(1)
 
@@ -140,7 +154,7 @@ def main ():
         print("\nExecução em lote finalizada com sucesso.")
     # Execução de uma instância
     else:
-        if heuristica not in ["MJ", "CW", "GM"]:
+        if heuristica not in ["MJ", "CW", "GM", "LS-MJ-BL-Shift"]:
             print(f"Erro: a heurística {heuristica} não é reconhecida. Use MJ, CW ou GM.")
             sys.exit(1)
 
