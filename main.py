@@ -42,14 +42,24 @@ def executar_metodo (dados_instancia, metodo):
         rotas, custo_total = solver.gillet_miller()
         tempo_fim = time.time()
     elif metodo == "LS-MJ-BL-Shift":
-        rotas, custo_total = mole_jameson(dados_instancia, lambda_param=1.0)
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = mole_jameson(dados_instancia, lambda_param=1.0)
         estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_sem_penalidade'] = custo_sem_penalidade
+        estado['veiculos_disponiveis'] = dados_instancia.get('trucks', veiculos_usados)
         estado['custo_total'] = custo_total
+
         tempo_inicio = time.time()
 
         houve_melhoria = True
         while houve_melhoria:
-            houve_melhoria, estado, delta = busca_lexicografica(estado, dados_instancia['distance_matrix'], dados_instancia['demands'], dados_instancia['capacity'])
+            houve_melhoria, estado, delta = busca_lexicografica(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['demands'],
+                dados_instancia['capacity'],
+                dados_instancia['depot']
+            )
 
         tempo_fim = time.time()
         rotas = utils.decode(estado, dados_instancia['depot'])
@@ -139,9 +149,9 @@ def main ():
 
             print("\nExecução em lote finalizada com sucesso. Gerando gráficos de resultados...")
 
-            gr.gerar_boxplot_gaps(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
-            gr.gerar_grafico_barras_runtime(resultados["MJ"]["runtimes"], resultados["CW"]["runtimes"], resultados["GM"]["runtimes"])
-            gr.gerar_intervalo_confianca(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
+            gr.gerar_boxplot_gaps_heuristicas_construtivas(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
+            gr.gerar_grafico_barras_runtime_heuristicas_construtivas(resultados["MJ"]["runtimes"], resultados["CW"]["runtimes"], resultados["GM"]["runtimes"])
+            gr.gerar_intervalo_confianca_heuristicas_construtivas(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
             th.gerar_grafico_diferenca_critica(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
             th.comparar_heuristicas(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
         else:

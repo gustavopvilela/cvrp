@@ -6,6 +6,13 @@ def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_dep
     tour = estado['tour']
     cargas = estado['cargas']
 
+    custo_base_atual = estado.get('custo_sem_penalidade', estado['custo_total'])
+    veiculos_disponiveis = estado.get('veiculos_disponiveis', 0)
+
+    veiculos_atuais = contar_veiculos_ativos(tour, id_deposito)
+    penalidade_atual = calcular_penalidade(custo_base_atual, veiculos_atuais, veiculos_disponiveis)
+    custo_total_atual = custo_base_atual + penalidade_atual
+
     melhor_delta = 0
     melhor_movimento = None
     caminhao_origem = 0
@@ -36,7 +43,21 @@ def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_dep
             no_anterior_destino = tour[j]
             no_proximo_destino = tour[j + 1]
             delta_insercao = (matriz_distancias[no_anterior_destino][no_cliente] + matriz_distancias[no_cliente][no_proximo_destino]) - matriz_distancias[no_anterior_destino][no_proximo_destino]
-            delta_total = delta_remocao + delta_insercao
+
+            delta_base = delta_remocao + delta_insercao
+            custo_base_vizinho = custo_base_atual + delta_base
+            veiculos_vizinho = veiculos_atuais
+
+            if no_anterior_origem == id_deposito and no_proximo_origem == id_deposito:
+                veiculos_vizinho -= 1
+
+            if no_anterior_destino == id_deposito and no_proximo_destino == id_deposito:
+                veiculos_vizinho += 1
+
+            penalidade_vizinho = calcular_penalidade(custo_base_vizinho, veiculos_vizinho, veiculos_disponiveis)
+            custo_total_vizinho = custo_base_vizinho + penalidade_vizinho
+
+            delta_total = custo_total_vizinho - custo_total_atual
 
             # Se encontrar mudança que melhore a rota
             if delta_total < melhor_delta:
@@ -48,7 +69,9 @@ def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_dep
                     'caminhao_destino': caminhao_destino,
                     'no_cliente': no_cliente,
                     'demanda': demanda_cliente,
-                    'delta': delta_total
+                    'custo_base_vizinho': custo_base_vizinho,
+                    'custo_total_vizinho': custo_total_vizinho,
+                    'delta_total': delta_total
                 }
 
     if melhor_movimento:
@@ -71,8 +94,30 @@ def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_dep
 
         estado['tour'] = tour
         estado['cargas'] = cargas
-        estado['custo_total'] += melhor_delta
+        estado['custo_sem_penalidade'] = melhor_movimento['custo_base_vizinho']
+        estado['custo_total'] = melhor_movimento['custo_total_vizinho']
 
-        return True, estado, melhor_delta
+        return True, estado, melhor_movimento['delta_total']
 
     return False, estado, 0
+
+def calcular_penalidade (custo_base, veiculos_usados, veiculos_disponiveis):
+    if not isinstance(veiculos_disponiveis, int) or veiculos_disponiveis <= 0:
+        return 0
+    if veiculos_usados == 0: return 0
+
+    custo_medio_rota = custo_base / veiculos_usados
+    alfa = custo_medio_rota * 0.3
+    beta = custo_medio_rota * 1.5
+
+    veiculos_sobraram = max(0, veiculos_disponiveis - veiculos_usados)
+    veiculos_faltaram = max(0, veiculos_usados - veiculos_disponiveis)
+
+    return (alfa * veiculos_sobraram) + (beta * veiculos_faltaram)
+
+def contar_veiculos_ativos (tour, deposito_id=1):
+    usados = 0
+    for i in range(len(tour) - 1):
+        if tour[i] == deposito_id and tour[i + 1] != deposito_id:
+            usados += 1
+    return usados

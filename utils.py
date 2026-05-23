@@ -131,10 +131,13 @@ def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
 
     plt.figure(figsize=(20,16))
 
-    cores = ['red', 'green', 'blue', 'orange', 'purple', 'magenta',
-             'brown', 'cyan', 'lightseagreen', 'teal', 'navy', 'gold',
-             'violet', 'chocolate', 'saddlebrown', 'indianred',
-             'dimgray', 'royalblue', 'mediumvioletred']
+    cores = [
+        "black", "darkorange", "darkblue", "tomato", "darkgreen", "orchid", "maroon", "dodgerblue", "saddlebrown", "fuchsia",
+        "darkslategray", "orange", "navy", "yellowgreen", "indigo", "salmon", "forestgreen", "mediumvioletred", "teal", "peru",
+        "midnightblue", "hotpink", "darkolivegreen", "slateblue", "firebrick", "cadetblue", "purple", "chocolate", "seagreen", "crimson",
+        "steelblue", "darkgoldenrod", "darkviolet", "slategray", "darkred", "mediumseagreen", "darkmagenta", "darkkhaki", "blue", "indianred",
+        "olive", "royalblue", "brown", "darkcyan", "mediumblue", "sienna", "green", "red", "darkorchid", "magenta"
+    ]
 
     # Plotando clientes
     cliente_x = [nos[i][0] for i in nos if i != deposito]
@@ -142,7 +145,7 @@ def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
     plt.scatter(cliente_x, cliente_y, c='black', label='Clientes', marker='o', alpha=0.5)
 
     # Plotando depósito
-    plt.scatter(coordenadas_deposito[0], coordenadas_deposito[1], c='black', label='Depósito', marker='s', s=100, edgecolor='none')
+    plt.scatter(coordenadas_deposito[0], coordenadas_deposito[1], c='black', label='Depósito', marker='s', s=150, edgecolor='none')
 
     # Plotando rotas
     for i, rota in enumerate(rotas):
