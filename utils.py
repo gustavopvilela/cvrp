@@ -131,10 +131,13 @@ def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
 
     plt.figure(figsize=(20,16))
 
-    cores = ['red', 'green', 'blue', 'orange', 'purple', 'magenta',
-             'brown', 'cyan', 'lightseagreen', 'teal', 'navy', 'gold',
-             'violet', 'chocolate', 'saddlebrown', 'indianred',
-             'dimgray', 'royalblue', 'mediumvioletred']
+    cores = [
+        "black", "darkorange", "darkblue", "tomato", "darkgreen", "orchid", "maroon", "dodgerblue", "saddlebrown", "fuchsia",
+        "darkslategray", "orange", "navy", "yellowgreen", "indigo", "salmon", "forestgreen", "mediumvioletred", "teal", "peru",
+        "midnightblue", "hotpink", "darkolivegreen", "slateblue", "firebrick", "cadetblue", "purple", "chocolate", "seagreen", "crimson",
+        "steelblue", "darkgoldenrod", "darkviolet", "slategray", "darkred", "mediumseagreen", "darkmagenta", "darkkhaki", "blue", "indianred",
+        "olive", "royalblue", "brown", "darkcyan", "mediumblue", "sienna", "green", "red", "darkorchid", "magenta"
+    ]
 
     # Plotando clientes
     cliente_x = [nos[i][0] for i in nos if i != deposito]
@@ -142,7 +145,7 @@ def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
     plt.scatter(cliente_x, cliente_y, c='black', label='Clientes', marker='o', alpha=0.5)
 
     # Plotando depósito
-    plt.scatter(coordenadas_deposito[0], coordenadas_deposito[1], c='black', label='Depósito', marker='s', s=100, edgecolor='none')
+    plt.scatter(coordenadas_deposito[0], coordenadas_deposito[1], c='black', label='Depósito', marker='s', s=150, edgecolor='none')
 
     # Plotando rotas
     for i, rota in enumerate(rotas):
@@ -167,20 +170,26 @@ def plotar_rotas (dados_instancia, rotas, arquivo_saida="rotas_cvrp.png"):
     print(f"Gráfico da instância {dados_instancia['name']} salvo em {arquivo_saida}")
 
 # Transforma a lista de listas em um único vetor com todas as rotas
-def encode (rotas, demandas, id_deposito=1):
+def encode(rotas, demandas, id_deposito=1):
     giant_tour = []
     cargas_rotas = []
 
     for rota in rotas:
-        giant_tour.extend(rota[:-1])
-        carga = sum(demandas[no] for no in rota if no != id_deposito)
+        rota_limpa = [no for no in rota if no != id_deposito]
+        if not rota_limpa: continue
+
+        giant_tour.append(id_deposito)
+        giant_tour.extend(rota_limpa)
+
+        carga = sum(demandas[no] for no in rota_limpa)
         cargas_rotas.append(carga)
 
-    if giant_tour: giant_tour.append(id_deposito)
+    if giant_tour:
+        giant_tour.append(id_deposito)
 
     estado = {
-        'tour': giant_tour,         # [deposito, 1, 2, deposito, 3, deposito]
-        'cargas': cargas_rotas      # [45, 30]
+        'tour': giant_tour,
+        'cargas': cargas_rotas
     }
 
     return estado

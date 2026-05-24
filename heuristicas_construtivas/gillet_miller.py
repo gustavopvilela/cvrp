@@ -115,6 +115,8 @@ class GilletMiller:
         veiculos_usados = len(self.rotas)
         veiculos_disponiveis = self.dados.get('trucks', veiculos_usados)
 
+        custo_sem_penalidade = self.custo_total
+
         if isinstance(veiculos_disponiveis, int) and veiculos_disponiveis > 0:
             custo_medio_rota = self.custo_total / veiculos_usados
             alfa = custo_medio_rota * 0.3  # Punição por caminhão que sobrou
@@ -127,4 +129,4 @@ class GilletMiller:
 
             self.custo_total += penalidade
 
-        return self.rotas, self.custo_total
+        return self.rotas, self.custo_total, custo_sem_penalidade, veiculos_usados

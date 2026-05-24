@@ -88,6 +88,8 @@ def mole_jameson(instancia, lambda_param=1.0):
 
     print(f"USADOS: {veiculos_usados} | DISPONÍVEIS: {veiculos_disponiveis}")
 
+    custo_sem_penalidade = custo_total
+
     if isinstance(veiculos_disponiveis, int) and veiculos_disponiveis > 0:
         custo_medio_rota = custo_total / veiculos_usados
         alfa = custo_medio_rota * 0.3 # Punição por caminhão que sobrou
@@ -100,4 +102,4 @@ def mole_jameson(instancia, lambda_param=1.0):
 
         custo_total += penalidade
 
-    return rotas, custo_total
+    return rotas, custo_total, custo_sem_penalidade, veiculos_usados

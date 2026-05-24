@@ -96,6 +96,8 @@ def clarke_wright(instancia):
 
     print(f"USADOS: {veiculos_usados} | DISPONÍVEIS: {veiculos_disponiveis}")
 
+    custo_sem_penalidade = custo_total
+
     if isinstance(veiculos_disponiveis, int) and veiculos_disponiveis > 0:
         custo_medio_rota = custo_total / veiculos_usados
         alfa = custo_medio_rota * 0.3  #punição por caminhão que sobrou
@@ -108,4 +110,4 @@ def clarke_wright(instancia):
 
         custo_total += penalidade
 
-    return rotas_finais, custo_total
+    return rotas_finais, custo_total, custo_sem_penalidade, veiculos_usados
