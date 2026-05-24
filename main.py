@@ -4,9 +4,11 @@ import utils
 import time
 import graficos_resultados as gr
 import teste_hipotese as th
-from mole_jameson import mole_jameson
-from economiasClarkWright import clarke_wright
-from gillet_miller import GilletMiller
+from busca_local.busca_lexicografica import busca_lexicografica
+from heuristicas_construtivas.mole_jameson import mole_jameson
+from heuristicas_construtivas.economiasClarkWright import clarke_wright
+from heuristicas_construtivas.gillet_miller import GilletMiller
+from busca_local.busca_sequencial import busca_sequencial
 
 OTIMOS_CONHECIDOS = {
     'A-n80-k10.vrp': 1763.0,
@@ -40,6 +42,54 @@ def executar_metodo (dados_instancia, metodo):
         solver = GilletMiller(dados_instancia)
         rotas, custo_total = solver.gillet_miller()
         tempo_fim = time.time()
+    elif metodo == "LS-MJ-BL-Shift":
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = mole_jameson(dados_instancia, lambda_param=1.0)
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_sem_penalidade'] = custo_sem_penalidade
+        estado['veiculos_disponiveis'] = dados_instancia.get('trucks', veiculos_usados)
+        estado['custo_total'] = custo_total
+
+        tempo_inicio = time.time()
+
+        houve_melhoria = True
+        while houve_melhoria:
+            houve_melhoria, estado, delta = busca_lexicografica(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['demands'],
+                dados_instancia['capacity'],
+                dados_instancia['depot']
+            )
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
+
+    elif metodo == "LS-CW-BS-Swap":  #local search - clarck-wright - busca sequencial - swap
+        rotas, custo_total = clarke_wright(dados_instancia)
+
+        veiculos_usados = len([r for r in rotas if len(r) > 0])
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_total'] = custo_total
+        estado['custo_sem_penalidade'] = custo_total  # assumindo sem penalidade como teto para o swap
+
+        tempo_inicio = time.time()
+
+        houve_melhoria = True
+        while houve_melhoria:
+            houve_melhoria, estado, delta = busca_sequencial(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['demands'],
+                dados_instancia['capacity'],
+                dados_instancia['depot']
+            )
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
     else:
         raise ValueError("Método desconhecido.")
 
@@ -90,7 +140,7 @@ def main ():
 
     # Execução em lote
     if instancia_arg == "ALL":
-        if heuristica not in ["MJ", "CW", "GM", "ALL"]:
+        if heuristica not in ["MJ", "CW", "GM", "ALL", "LS-MJ-BL-Shift", "LS-CW-BS-Swap"]:
             print(f"Erro: a heurística {heuristica} não é reconhecida. Use MJ, CW ou GM.")
             sys.exit(1)
 
@@ -125,9 +175,9 @@ def main ():
 
             print("\nExecução em lote finalizada com sucesso. Gerando gráficos de resultados...")
 
-            gr.gerar_boxplot_gaps(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
-            gr.gerar_grafico_barras_runtime(resultados["MJ"]["runtimes"], resultados["CW"]["runtimes"], resultados["GM"]["runtimes"])
-            gr.gerar_intervalo_confianca(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
+            gr.gerar_boxplot_gaps_heuristicas_construtivas(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
+            gr.gerar_grafico_barras_runtime_heuristicas_construtivas(resultados["MJ"]["runtimes"], resultados["CW"]["runtimes"], resultados["GM"]["runtimes"])
+            gr.gerar_intervalo_confianca_heuristicas_construtivas(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
             th.gerar_grafico_diferenca_critica(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
             th.comparar_heuristicas(resultados["MJ"]["gaps"], resultados["CW"]["gaps"], resultados["GM"]["gaps"])
         else:
@@ -140,7 +190,7 @@ def main ():
         print("\nExecução em lote finalizada com sucesso.")
     # Execução de uma instância
     else:
-        if heuristica not in ["MJ", "CW", "GM"]:
+        if heuristica not in ["MJ", "CW", "GM", "LS-MJ-BL-Shift", "LS-CW-BS-Swap"]:
             print(f"Erro: a heurística {heuristica} não é reconhecida. Use MJ, CW ou GM.")
             sys.exit(1)
 
