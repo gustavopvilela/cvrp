@@ -2,7 +2,7 @@
 Busca local lexicográfica com vizinhança de realocação (shift inter-rotas)
 Estratégia: best improvement
 """
-def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_deposito=1):
+def shift_inter_rotas(estado, matriz_distancias, demandas, capacidade, id_deposito=1):
     tour = estado['tour']
     cargas = estado['cargas']
 
@@ -36,7 +36,6 @@ def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_dep
             if tour[j] == id_deposito and j > 0:
                 caminhao_destino += 1
 
-            # Não permite que se faça a troca intra-rotas, somente inter-rotas
             if caminhao_origem == caminhao_destino: continue
             if cargas[caminhao_destino] + demanda_cliente > capacidade: continue
 
@@ -83,13 +82,8 @@ def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_dep
         cargas[melhor_movimento['caminhao_destino']] += melhor_movimento['demanda']
 
         tour.pop(index_remocao)
-
-        # Se o índice de inserção estava à frente do de remoção, o pop()
-        # anterior recuou todos os elementos à direita em uma podição, é
-        # necessário ajustar
         if index_insercao >= index_remocao:
             index_insercao -= 1
-
         tour.insert(index_insercao + 1, no)
 
         estado['tour'] = tour
@@ -98,6 +92,69 @@ def busca_lexicografica (estado, matriz_distancias, demandas, capacidade, id_dep
         estado['custo_total'] = melhor_movimento['custo_total_vizinho']
 
         return True, estado, melhor_movimento['delta_total']
+
+    return False, estado, 0
+
+def shift_intra_rotas(estado, matriz_distancias, id_deposito=1):
+    tour = estado['tour']
+    melhor_delta = 0
+    melhor_movimento = None
+    caminhao = 0
+
+    for i in range(1, len(tour) - 1):
+        if tour[i] == id_deposito:
+            caminhao += 1
+            continue
+
+        no_cliente = tour[i]
+        no_anterior_origem = tour[i - 1]
+        no_proximo_origem = tour[i + 1]
+
+        delta_remocao = matriz_distancias[no_anterior_origem][no_proximo_origem] - (
+                    matriz_distancias[no_anterior_origem][no_cliente] + matriz_distancias[no_cliente][
+                no_proximo_origem])
+
+        caminhao_destino = 0
+        for j in range(len(tour) - 1):
+            if tour[j] == id_deposito and j > 0:
+                caminhao_destino += 1
+
+            if caminhao != caminhao_destino: continue
+
+            # Evita reinserir o nó na mesma posição ou vizinha imediata (movimento nulo)
+            if j == i or j == i - 1: continue
+
+            no_anterior_destino = tour[j]
+            no_proximo_destino = tour[j + 1]
+            delta_insercao = (matriz_distancias[no_anterior_destino][no_cliente] + matriz_distancias[no_cliente][
+                no_proximo_destino]) - matriz_distancias[no_anterior_destino][no_proximo_destino]
+
+            delta_total = delta_remocao + delta_insercao
+
+            if delta_total < melhor_delta:
+                melhor_delta = delta_total
+                melhor_movimento = {
+                    'index_remocao': i,
+                    'index_insercao': j,
+                    'no_cliente': no_cliente,
+                    'delta': delta_total
+                }
+
+    if melhor_movimento:
+        index_remocao = melhor_movimento['index_remocao']
+        index_insercao = melhor_movimento['index_insercao']
+        no = melhor_movimento['no_cliente']
+
+        tour.pop(index_remocao)
+        if index_insercao >= index_remocao:
+            index_insercao -= 1
+        tour.insert(index_insercao + 1, no)
+
+        estado['tour'] = tour
+        estado['custo_sem_penalidade'] += melhor_movimento['delta']
+        estado['custo_total'] += melhor_movimento['delta']
+
+        return True, estado, melhor_movimento['delta']
 
     return False, estado, 0
 
