@@ -1,8 +1,7 @@
 """
-Busca local Sequencial com vizinhança de Swap (Troca 1-1)
-Estratégia: First Improvement (Primeiro Aprimorante)
+Busca local sequencial com vizinhança de Swap
+Estratégia: Next-Improvement
 """
-
 
 def busca_sequencial(estado, matriz_distancias, demandas, capacidade, id_deposito=1):
     tour = estado['tour']
@@ -11,6 +10,9 @@ def busca_sequencial(estado, matriz_distancias, demandas, capacidade, id_deposit
     #o número de veículos nuca muda, então a penalidade continua igual
     custo_base_atual = estado.get('custo_sem_penalidade', estado['custo_total'])
 
+    #acumulando os resultados de uma passada inteira pelo mapa
+    houve_melhoria_nessa_passada = False
+    delta_acumulado = 0.0
     caminhao_i = 0
 
     #percorre o tour gigante buscando o primeiro nó da troca
@@ -89,14 +91,18 @@ def busca_sequencial(estado, matriz_distancias, demandas, capacidade, id_deposit
                     cargas[caminhao_i] = nova_carga_i
                     cargas[caminhao_j] = nova_carga_j
 
-                #atualiza o dicionário com os novos valores para a próxima iteração
-                estado['tour'] = tour
-                estado['cargas'] = cargas
-                estado['custo_sem_penalidade'] += delta
-                estado['custo_total'] += delta
+                delta_acumulado += delta
+                houve_melhoria_nessa_passada = True
 
-                #retorna true indicando que o while do main deve rodar de novo
-                return True, estado, delta
+                break
+
+    if houve_melhoria_nessa_passada:
+        estado['tour'] = tour
+        estado['cargas'] = cargas
+        estado['custo_sem_penalidade'] += delta_acumulado
+        estado['custo_total'] += delta_acumulado
+
+        return True, estado, delta_acumulado
 
     #se varreu o array inteiro e não achou nada, o algoritmo chegou no Ótimo Local
     return False, estado, 0

@@ -73,7 +73,7 @@ def executar_metodo (dados_instancia, metodo):
         estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
 
         estado['custo_total'] = custo_total
-        estado['custo_sem_penalidade'] = custo_total  # assumindo sem penalidade como teto para o swap
+        estado['custo_sem_penalidade'] = custo_total  #assumindo sem penalidade como teto para o swap
 
         tempo_inicio = time.time()
 
