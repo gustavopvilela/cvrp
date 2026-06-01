@@ -42,38 +42,24 @@ class GilletMiller:
             custo += self.matriz_distancias[rota[-1]][self.deposito]
         return custo
 
-    # Busca local 2-opt
-    def dois_opt(self, rota_cluster):
-        # Se a rota tem 1 ou 2 clientes entao nao tem o que otimizar com dois_opt
-        if len(rota_cluster) <= 2:
-            return rota_cluster
+   # Vizinho mais próximo:
+    def vizinho_mais_prox(self, clientes_cluster):
+        if not clientes_cluster: return []
 
-        rota = [self.deposito] + rota_cluster + [self.deposito]
-        melhoria = True
+        rota_ordenada = []
+        nao_visitados = clientes_cluster.copy()
 
-        # Itera até que nenhuma troca melhore o custo da rota mais
-        while melhoria:
-            melhoria = False
+        no_atual = self.deposito
 
-            # Percorre todas as combinações de duas arestas para quebrar e reconectar
-            for i in range(1, len(rota) - 2):
-                for j in range(i + 1, len(rota) - 1):
-                    no_i_ant = rota[i - 1]
-                    no_i = rota[i]
-                    no_j = rota[j]
-                    no_j_prox = rota[j + 1]
+        while nao_visitados:
+            proximo_no = min(nao_visitados, key=lambda no: self.matriz_distancias[no_atual][no])
 
-                    #custo:
-                    custo_atual = self.matriz_distancias[no_i_ant][no_i] + self.matriz_distancias[no_j][no_j_prox]
-                    #custo se inverter o caminho:
-                    custo_novo = self.matriz_distancias[no_i_ant][no_j] + self.matriz_distancias[no_i][no_j_prox]
+            rota_ordenada.append(proximo_no)
+            nao_visitados.remove(proximo_no)
 
-                    # Usa - 1e-6 que é um valor mto pequeno como tolerancia pra evitar problema de ponto flutuante
-                    if custo_novo < custo_atual - 1e-6:
-                        rota[i:j + 1] = reversed(rota[i:j + 1])
-                        melhoria = True
+            no_atual = proximo_no
 
-        return rota[1:-1]
+        return rota_ordenada
 
     # Foi adaptado do livro do Goldbarg e Luna "Otimização Combinatória e Programação Linear"
     def gillet_miller(self):
@@ -105,8 +91,8 @@ class GilletMiller:
             # Atualiza F para conter apenas os clientes que não couberam nesta rota
             F = clientes_que_sobraram
 
-            # Chama 2-opt
-            rota_otimizada = self.dois_opt(rota_atual)
+            # Chama vizinho mais proximo
+            rota_otimizada = self.vizinho_mais_prox(rota_atual)
             self.rotas.append(rota_otimizada)
 
         self.custo_total = self.calcula_custo()
