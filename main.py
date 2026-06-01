@@ -4,7 +4,8 @@ import utils
 import time
 import graficos_resultados as gr
 import teste_hipotese as th
-from busca_local.busca_lexicografica import busca_lexicografica
+from busca_local.busca_lexicografica import shift_inter_rotas, shift_intra_rotas
+from busca_local.dois_opt import dois_opt
 from heuristicas_construtivas.mole_jameson import mole_jameson
 from heuristicas_construtivas.economiasClarkWright import clarke_wright
 from heuristicas_construtivas.gillet_miller import GilletMiller
@@ -31,17 +32,20 @@ OTIMOS_CONHECIDOS = {
 def executar_metodo (dados_instancia, metodo):
     if metodo == "MJ":
         tempo_inicio = time.time()
-        rotas, custo_total = mole_jameson(dados_instancia, lambda_param=1.0)
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = mole_jameson(dados_instancia, lambda_param=1.0)
         tempo_fim = time.time()
+
     elif metodo == "CW":
         tempo_inicio = time.time()
-        rotas, custo_total = clarke_wright(dados_instancia)
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = clarke_wright(dados_instancia)
         tempo_fim = time.time()
+
     elif metodo == "GM":
         tempo_inicio = time.time()
         solver = GilletMiller(dados_instancia)
-        rotas, custo_total = solver.gillet_miller()
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = solver.gillet_miller()
         tempo_fim = time.time()
+
     elif metodo == "LS-MJ-BL-Shift":
         rotas, custo_total, custo_sem_penalidade, veiculos_usados = mole_jameson(dados_instancia, lambda_param=1.0)
         estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
@@ -52,9 +56,14 @@ def executar_metodo (dados_instancia, metodo):
 
         tempo_inicio = time.time()
 
-        houve_melhoria = True
-        while houve_melhoria:
-            houve_melhoria, estado, delta = busca_lexicografica(
+        melhoria_geral = True
+        max_iteracoes = 100
+        iteracao_atual = 0
+
+        while melhoria_geral and iteracao_atual < max_iteracoes:
+            melhoria_geral = False
+            iteracao_atual += 1
+            houve_melhoria, estado, delta = shift_inter_rotas(
                 estado,
                 dados_instancia['distance_matrix'],
                 dados_instancia['demands'],
@@ -62,10 +71,192 @@ def executar_metodo (dados_instancia, metodo):
                 dados_instancia['depot']
             )
 
+            if houve_melhoria:
+                melhoria_geral = True
+                continue
+
+            houve_melhoria, estado, delta = shift_intra_rotas(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['depot']
+            )
+
+            if houve_melhoria: melhoria_geral = True
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
+        if iteracao_atual >= max_iteracoes:
+            print(f"Aviso: busca local interrompida no limite de {max_iteracoes} iterações.")
+
+    elif metodo == "LS-CW-BL-Shift":
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = clarke_wright(dados_instancia)
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_sem_penalidade'] = custo_sem_penalidade
+        estado['veiculos_disponiveis'] = dados_instancia.get('trucks', veiculos_usados)
+        estado['custo_total'] = custo_total
+
+        tempo_inicio = time.time()
+
+        melhoria_geral = True
+        max_iteracoes = 100
+        iteracao_atual = 0
+
+        while melhoria_geral and iteracao_atual < max_iteracoes:
+            melhoria_geral = False
+            iteracao_atual += 1
+            houve_melhoria, estado, delta = shift_inter_rotas(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['demands'],
+                dados_instancia['capacity'],
+                dados_instancia['depot']
+            )
+
+            if houve_melhoria:
+                melhoria_geral = True
+                continue
+
+            houve_melhoria, estado, delta = shift_intra_rotas(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['depot']
+            )
+
+            if houve_melhoria: melhoria_geral = True
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
+        if iteracao_atual >= max_iteracoes:
+            print(f"Aviso: busca local interrompida no limite de {max_iteracoes} iterações.")
+
+    elif metodo == "LS-GM-BL-Shift":
+        solver = GilletMiller(dados_instancia)
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = solver.gillet_miller()
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_sem_penalidade'] = custo_sem_penalidade
+        estado['veiculos_disponiveis'] = dados_instancia.get('trucks', veiculos_usados)
+        estado['custo_total'] = custo_total
+
+        tempo_inicio = time.time()
+
+        melhoria_geral = True
+        max_iteracoes = 100
+        iteracao_atual = 0
+
+        while melhoria_geral and iteracao_atual < max_iteracoes:
+            melhoria_geral = False
+            iteracao_atual += 1
+            houve_melhoria, estado, delta = shift_inter_rotas(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['demands'],
+                dados_instancia['capacity'],
+                dados_instancia['depot']
+            )
+
+            if houve_melhoria:
+                melhoria_geral = True
+                continue
+
+            houve_melhoria, estado, delta = shift_intra_rotas(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['depot']
+            )
+
+            if houve_melhoria: melhoria_geral = True
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
+        if iteracao_atual >= max_iteracoes:
+            print(f"Aviso: busca local interrompida no limite de {max_iteracoes} iterações.")
+
+    elif metodo == "LS-MJ-BL-2Opt":
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = mole_jameson(dados_instancia, lambda_param=1.0)
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_sem_penalidade'] = custo_sem_penalidade
+        estado['veiculos_disponiveis'] = dados_instancia.get('trucks', veiculos_usados)
+        estado['custo_total'] = custo_total
+
+        tempo_inicio = time.time()
+        melhoria_geral = True
+        max_iteracoes = 100
+        iteracao_atual = 0
+
+        while melhoria_geral and iteracao_atual < max_iteracoes:
+            melhoria_geral = False
+            iteracao_atual += 1
+            houve_melhoria, estado, delta = dois_opt(estado, dados_instancia['distance_matrix'],
+                                                     dados_instancia['depot'])
+            if houve_melhoria: melhoria_geral = True
+
         tempo_fim = time.time()
         rotas = utils.decode(estado, dados_instancia['depot'])
         custo_total = estado['custo_total']
 
+    elif metodo == "LS-CW-BL-2Opt":
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = clarke_wright(dados_instancia)
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_sem_penalidade'] = custo_sem_penalidade
+        estado['veiculos_disponiveis'] = dados_instancia.get('trucks', veiculos_usados)
+        estado['custo_total'] = custo_total
+
+        tempo_inicio = time.time()
+        melhoria_geral = True
+        max_iteracoes = 100
+        iteracao_atual = 0
+
+        while melhoria_geral and iteracao_atual < max_iteracoes:
+            melhoria_geral = False
+            iteracao_atual += 1
+            houve_melhoria, estado, delta = dois_opt(estado, dados_instancia['distance_matrix'],
+                                                     dados_instancia['depot'])
+            if houve_melhoria: melhoria_geral = True
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
+
+    elif metodo == "LS-GM-BL-2Opt":
+        solver = GilletMiller(dados_instancia)
+        rotas, custo_total, custo_sem_penalidade, veiculos_usados = solver.gillet_miller()
+        estado = utils.encode(rotas, dados_instancia['demands'], dados_instancia['depot'])
+
+        estado['custo_sem_penalidade'] = custo_sem_penalidade
+        estado['veiculos_disponiveis'] = dados_instancia.get('trucks', veiculos_usados)
+        estado['custo_total'] = custo_total
+
+        tempo_inicio = time.time()
+
+        melhoria_geral = True
+        max_iteracoes = 100
+        iteracao_atual = 0
+
+        # Laço da Busca Local
+        while melhoria_geral and iteracao_atual < max_iteracoes:
+            melhoria_geral = False
+            iteracao_atual += 1
+
+            # Chama o seu 2-Opt
+            houve_melhoria, estado, delta = dois_opt(
+                estado,
+                dados_instancia['distance_matrix'],
+                dados_instancia['depot']
+            )
+
+            if houve_melhoria:
+                melhoria_geral = True
+
+        tempo_fim = time.time()
+        rotas = utils.decode(estado, dados_instancia['depot'])
+        custo_total = estado['custo_total']
     elif metodo == "LS-CW-BS-Swap":  #local search - clarck-wright - busca sequencial - swap
         rotas, custo_total = clarke_wright(dados_instancia)
 
@@ -140,7 +331,7 @@ def main ():
 
     # Execução em lote
     if instancia_arg == "ALL":
-        if heuristica not in ["MJ", "CW", "GM", "ALL", "LS-MJ-BL-Shift", "LS-CW-BS-Swap"]:
+        if heuristica not in ["MJ", "CW", "GM", "ALL", "LS-MJ-BL-Shift", "LS-CW-BL-Shift", "LS-GM-BL-Shift", "LS-MJ-BL-2Opt", "LS-CW-BL-2Opt", "LS-GM-BL-2Opt", "LS-CW-BS-Swap", "LS-MJ-BS-Swap", "LS-GM-BS-Swap"]:
             print(f"Erro: a heurística {heuristica} não é reconhecida. Use MJ, CW ou GM.")
             sys.exit(1)
 
@@ -190,7 +381,7 @@ def main ():
         print("\nExecução em lote finalizada com sucesso.")
     # Execução de uma instância
     else:
-        if heuristica not in ["MJ", "CW", "GM", "LS-MJ-BL-Shift", "LS-CW-BS-Swap"]:
+        if heuristica not in ["MJ", "CW", "GM", "LS-MJ-BL-Shift", "LS-CW-BL-Shift", "LS-GM-BL-Shift", "LS-MJ-BL-2Opt", "LS-CW-BL-2Opt", "LS-GM-BL-2Opt", "LS-CW-BS-Swap", "LS-MJ-BS-Swap", "LS-GM-BS-Swap"]:
             print(f"Erro: a heurística {heuristica} não é reconhecida. Use MJ, CW ou GM.")
             sys.exit(1)
 
