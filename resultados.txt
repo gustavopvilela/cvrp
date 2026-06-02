@@ -1,2 +1,0 @@
-INSTANCE        METHOD          OBJECTIVE       RUNTIME         GAP            
-A-n80-k10       LS-GM-BL-2Opt   2236.64         0.00            26.87          
