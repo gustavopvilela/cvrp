@@ -125,14 +125,14 @@ def gerar_intervalo_confianca_heuristicas_construtivas (gaps_mj, gaps_cw, gaps_g
     plt.savefig('grafico_intervalo_confianca.png', format='png', dpi=300)
     plt.show()
 
-def gerar_boxplot_gaps_busca_local (gaps_shift, gaps_swap, gaps_2opt):
-    dados_completos = [gaps_shift, gaps_swap, gaps_2opt]
+def gerar_boxplot_gaps_busca_local (gaps_shift, gaps_2opt, gaps_swap):
+    dados_completos = [gaps_shift, gaps_2opt, gaps_swap]
 
     fig, ax = plt.subplots(figsize=(16, 12))
 
     bplot = ax.boxplot(dados_completos,
                        patch_artist=True,
-                       tick_labels=['Shift', 'Swap', '2-opt'])
+                       tick_labels=['Shift', '2-opt', 'Swap'])
 
     cores = ['pink', 'lightblue', 'lightgreen']
     for caixa, cor in zip(bplot['boxes'], cores):
@@ -147,7 +147,7 @@ def gerar_boxplot_gaps_busca_local (gaps_shift, gaps_swap, gaps_2opt):
     plt.savefig('grafico_boxplot_gaps_busca_local.png', format='png', dpi=300)
     plt.show()
 
-def gerar_grafico_barras_runtime_busca_local (runtime_shift, runtime_swap, runtime_2opt):
+def gerar_grafico_barras_runtime_busca_local (runtime_shift, runtime_2opt, runtime_swap):
     registros = [
         'A-n80-k10',
         'CMT10',
@@ -172,8 +172,8 @@ def gerar_grafico_barras_runtime_busca_local (runtime_shift, runtime_swap, runti
     fig, ax = plt.subplots(figsize=(28, 12))
 
     ax.bar(x - largura, runtime_shift, largura, label='Shift', color='dodgerblue')
-    ax.bar(x, runtime_swap, largura, label='Swap', color='crimson')
-    ax.bar(x + largura, runtime_2opt, largura, label='2-opt', color='goldenrod')
+    ax.bar(x, runtime_2opt, largura, label='2-opt', color='crimson')
+    ax.bar(x + largura, runtime_swap, largura, label='Swap', color='goldenrod')
 
     ax.set_ylabel('Runtime (em segundos)')
     ax.set_title('Runtime das vizinhanças')
@@ -190,9 +190,9 @@ def gerar_grafico_barras_runtime_busca_local (runtime_shift, runtime_swap, runti
     plt.savefig('grafico_barras_runtime_busca_local.png', format='png', dpi=300)
     plt.show()
 
-def gerar_intervalo_confianca_busca_local (gaps_shift, gaps_swap, gaps_2opt):
-    dados = [gaps_shift, gaps_swap, gaps_2opt]
-    nomes_vizinhancas = ['Shift', 'Swap', '2-opt']
+def gerar_intervalo_confianca_busca_local (gaps_shift, gaps_2opt, gaps_swap):
+    dados = [gaps_shift, gaps_2opt, gaps_swap]
+    nomes_vizinhancas = ['Shift', '2-opt', 'Swap']
 
     medias = [np.mean(amostra) for amostra in dados]
 

@@ -132,6 +132,8 @@ def executar_metodo(dados_instancia, metodo, solucao_base=None):
     rotas = utils.decode(estado, dados_instancia['depot'])
     custo_total = estado['custo_total']
 
+    print(f"USADOS DEPOIS DA BUSCA LOCAL: {len(rotas)}/{dados_instancia['trucks']}")
+
     return rotas, custo_total, tempo_fim_bl - tempo_inicio_bl
 
 def processar_instancia(caminho_arquivo, arquivo_saida, otimo_conhecido, metodo, metodo_nome_saida, solucao_base=None, dados_instancia=None):
@@ -270,6 +272,7 @@ def main ():
                                                             resultados[m3]["runtimes"])
                 gr.gerar_intervalo_confianca_busca_local(resultados[m1]["gaps"], resultados[m2]["gaps"],
                                                          resultados[m3]["gaps"])
+                th.comparar_buscas_locais(resultados[m1]["gaps"], resultados[m2]["gaps"], resultados[m3]["gaps"])
         else:
             print(f"Iniciando benchmarking em lote ({metodo}) para {len(arquivos)} instâncias...")
             for arquivo in arquivos:
